@@ -1,0 +1,2 @@
+bootJar { enabled = true; archiveFileName = 'payment-service.jar' }
+jar { enabled = false }

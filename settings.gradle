@@ -1,1 +1,3 @@
-rootProject.name = 'outbox'
+rootProject.name = 'outbox-pattern-demo'
+include 'payment-service'
+include 'coupon-service'

@@ -1,0 +1,1 @@
+-- TODO: coupons, outbox, processed_events 테이블 DDL 작성

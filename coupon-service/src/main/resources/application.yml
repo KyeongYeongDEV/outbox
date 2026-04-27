@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: coupon-service
+  datasource:
+    url: jdbc:mysql://localhost:3308/coupon_db?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
+    username: coupon
+    password: coupon
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+  flyway:
+    enabled: false
+  kafka:
+    bootstrap-servers: localhost:29092
+    consumer:
+      group-id: coupon-service
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      enable-idempotence: true
+    listener:
+      ack-mode: manual
+
+server:
+  port: 8082

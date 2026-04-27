@@ -1,0 +1,2 @@
+bootJar { enabled = true; archiveFileName = 'coupon-service.jar' }
+jar { enabled = false }

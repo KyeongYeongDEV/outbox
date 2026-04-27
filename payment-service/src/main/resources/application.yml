@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: payment-service
+  datasource:
+    url: jdbc:mysql://localhost:3307/payment_db?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
+    username: payment
+    password: payment
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none       # 테이블 없어도 에러 안 냄
+    show-sql: true
+  flyway:
+    enabled: false         # DDL 짜기 전까지 꺼둠
+  kafka:
+    bootstrap-servers: localhost:29092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      enable-idempotence: true
+
+server:
+  port: 8081

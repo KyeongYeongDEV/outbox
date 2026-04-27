@@ -1,0 +1,1 @@
+-- TODO: payments 테이블, outbox 테이블 DDL 작성

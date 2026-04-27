@@ -1,0 +1,11 @@
+**/build
+**/.gradle
+**/.idea
+**/.vscode
+**/*.iml
+**/node_modules
+.git
+.gitignore
+docs
+HELP.md
+.src_backup
