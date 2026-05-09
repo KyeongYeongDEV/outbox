@@ -8,10 +8,16 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: none       # 테이블 없어도 에러 안 냄
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
     show-sql: true
   flyway:
-    enabled: false         # DDL 짜기 전까지 꺼둠
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
   kafka:
     bootstrap-servers: localhost:29092
     producer:
@@ -19,6 +25,14 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
       acks: all
       enable-idempotence: true
+      properties:
+        max.in.flight.requests.per.connection: 5
+        retries: 2147483647
 
 server:
   port: 8081
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
