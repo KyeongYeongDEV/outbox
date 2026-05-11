@@ -1,0 +1,65 @@
+package com.example.payment.infrastructure.messaging;
+
+import com.example.payment.infrastructure.outbox.OutboxMessage;
+import com.example.payment.infrastructure.outbox.OutboxMessageRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class OutboxPollingPublisher {
+
+  private static final int BATCH_SIZE = 100;
+  private static final int MAX_RETRY = 5;
+
+  private final OutboxMessageRepository outboxRepository;
+  private final KafkaTemplate<String, String> kafkaTemplate;
+
+  @Scheduled(fixedDelay = 1000)
+  @Transactional
+  public void publish() {
+    List<OutboxMessage> messages = outboxRepository.findPendingMessages(BATCH_SIZE);
+    if (messages.isEmpty())
+      return;
+
+    log.debug("[Polling] {}건 처리 시작", messages.size());
+
+    for (OutboxMessage msg : messages) {
+      try {
+        // 토픽명: payment.PaymentCompleted
+        String topic = msg.getAggregateType().toLowerCase()
+            + "." + msg.getEventType();
+
+        kafkaTemplate.send(topic, msg.getAggregateId(), msg.getPayload())
+            .whenComplete((result, ex) -> {
+              if (ex != null) {
+                log.error("[Polling] 발행 실패 eventId={}", msg.getEventId(), ex);
+                handleFailure(msg);
+              } else {
+                msg.markPublished();
+                log.info("[Polling] 발행 완료 eventId={} topic={}", msg.getEventId(), topic);
+              }
+            });
+
+      } catch (Exception e) {
+        log.error("[Polling] 예외 발생 eventId={}", msg.getEventId(), e);
+        handleFailure(msg);
+      }
+    }
+  }
+
+  private void handleFailure(OutboxMessage msg) {
+    msg.incrementRetry();
+    if (msg.getRetryCount() >= MAX_RETRY) {
+      msg.markFailed();
+      log.error("[Polling] FAILED 처리 eventId={} retryCount={}", msg.getEventId(), msg.getRetryCount());
+    }
+  }
+}
