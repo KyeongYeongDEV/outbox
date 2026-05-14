@@ -4,6 +4,8 @@ import com.example.payment.infrastructure.outbox.OutboxMessage;
 import com.example.payment.infrastructure.outbox.OutboxMessageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -14,6 +16,7 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "outbox.polling.enabled", havingValue = "true", matchIfMissing = true)
 public class OutboxPollingPublisher {
 
     private static final int BATCH_SIZE = 100;
@@ -26,7 +29,8 @@ public class OutboxPollingPublisher {
     @Transactional
     public void publish() {
         List<OutboxMessage> messages = outboxRepository.findPendingMessages(BATCH_SIZE);
-        if (messages.isEmpty()) return;
+        if (messages.isEmpty())
+            return;
 
         log.debug("[Polling] {}건 처리 시작", messages.size());
 

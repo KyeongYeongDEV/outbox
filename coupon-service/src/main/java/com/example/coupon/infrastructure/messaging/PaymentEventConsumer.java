@@ -19,22 +19,19 @@ public class PaymentEventConsumer {
   private final ObjectMapper objectMapper;
 
   @KafkaListener(topics = "payment.PaymentCompleted", groupId = "coupon-service")
-  public void onPaymentCompleted(ConsumerRecord<String, String> record, Acknowledgment ack) {
+  public void onPaymentCompleted(ConsumerRecord<String, String> record, Acknowledgment ack)
+      throws Exception { // ← 추가: checked exception을 Spring Kafka로 위임
+
     log.info("[Consumer] 수신 topic={} partition={} offset={}",
         record.topic(), record.partition(), record.offset());
-    try {
-      PaymentCompletedEvent event = objectMapper.readValue(record.value(), PaymentCompletedEvent.class);
 
-      couponService.issueFromPayment(event);
+    // try-catch 제거 → 예외가 터지면 Spring Kafka가 재시도 → DLQ로 보냄
+    // 기존처럼 catch 안에서 ack하면 DLQ가 동작 안 함
+    PaymentCompletedEvent event = objectMapper.readValue(record.value(), PaymentCompletedEvent.class);
 
-      // 처리 성공 후 수동 커밋
-      // 커밋 전에 앱이 죽으면 → 재처리 → processed_events가 멱등성 보장
-      ack.acknowledge();
+    couponService.issueFromPayment(event);
 
-    } catch (Exception e) {
-      log.error("[Consumer] 처리 실패 offset={}", record.offset(), e);
-      // Phase 3에서 retry topic / DLQ 추가 예정
-      ack.acknowledge();
-    }
+    // 성공 시에만 ack
+    ack.acknowledge();
   }
 }

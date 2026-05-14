@@ -82,6 +82,7 @@ public class CouponService {
     log.info("[Coupon] 발급 완료 couponId={} userId={} discount={}{}",
         coupon.getId(), event.userId(),
         discountValue, discountType == DiscountType.FIXED ? "원" : "%");
+
   }
 
   private String toJson(Object obj) {

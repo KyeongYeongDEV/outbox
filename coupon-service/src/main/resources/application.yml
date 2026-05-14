@@ -34,8 +34,6 @@ spring:
       properties:
         max.in.flight.requests.per.connection: 5
         retries: 2147483647
-    listener:
-      ack-mode: manual
 
 server:
   port: 8082

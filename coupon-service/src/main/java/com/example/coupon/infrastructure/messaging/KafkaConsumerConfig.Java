@@ -1,11 +1,14 @@
 package com.example.coupon.infrastructure.messaging;
 
+import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -17,6 +20,7 @@ import org.springframework.util.backoff.FixedBackOff;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Configuration
 public class KafkaConsumerConfig {
 
@@ -40,24 +44,32 @@ public class KafkaConsumerConfig {
             ConsumerFactory<String, String> consumerFactory,
             KafkaTemplate<String, String> kafkaTemplate) {
 
+        log.info(">>> KafkaConsumerConfig 빈 생성됨");
+
         ConcurrentKafkaListenerContainerFactory<String, String> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
 
         factory.setConsumerFactory(consumerFactory);
-
-        // 수동 커밋 모드
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
 
-        // 재시도 3회, 1초 간격
-        // 3회 모두 실패 시 DLQ 토픽으로 이동
-        DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(kafkaTemplate);
+        DeadLetterPublishingRecoverer recoverer =
+                new DeadLetterPublishingRecoverer(kafkaTemplate);
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(
                 recoverer,
-                new FixedBackOff(1000L, 3L)  // 1초 간격, 최대 3회
+                new FixedBackOff(1000L, 3L)
         );
 
+        errorHandler.addNotRetryableExceptions(IllegalArgumentException.class);
         factory.setCommonErrorHandler(errorHandler);
 
         return factory;
+    }
+
+    @Bean
+    public NewTopic paymentCompletedDlt() {
+        return TopicBuilder.name("payment.PaymentCompleted.DLT")
+                .partitions(1)
+                .replicas(1)
+                .build();
     }
 }
