@@ -1,7 +1,7 @@
-package com.example.payment.infrastructure.messaging;
+package com.example.coupon.infrastructure.messaging;
 
-import com.example.payment.infrastructure.outbox.OutboxMessage;
-import com.example.payment.infrastructure.outbox.OutboxMessageRepository;
+import com.example.coupon.infrastructure.outbox.OutboxMessage;
+import com.example.coupon.infrastructure.outbox.OutboxMessageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -27,8 +27,6 @@ public class OutboxPollingPublisher {
     public void publish() {
         List<OutboxMessage> messages = outboxRepository.findPendingMessages(BATCH_SIZE);
         if (messages.isEmpty()) return;
-
-        log.debug("[Polling] {}건 처리 시작", messages.size());
 
         for (OutboxMessage msg : messages) {
             try {

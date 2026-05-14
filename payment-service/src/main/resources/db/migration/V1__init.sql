@@ -10,7 +10,7 @@ CREATE TABLE payments (
 
 CREATE TABLE outbox (
     id             BIGINT       AUTO_INCREMENT PRIMARY KEY,
-    event_id       CHAR(36)     NOT NULL UNIQUE,
+    event_id       VARCHAR(36)     NOT NULL UNIQUE,
     aggregate_type VARCHAR(50)  NOT NULL,
     aggregate_id   VARCHAR(50)  NOT NULL,
     event_type     VARCHAR(100) NOT NULL,

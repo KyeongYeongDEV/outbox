@@ -12,7 +12,7 @@ CREATE TABLE coupons (
 
 CREATE TABLE outbox (
     id             BIGINT       AUTO_INCREMENT PRIMARY KEY,
-    event_id       CHAR(36)     NOT NULL UNIQUE,
+    event_id       VARCHAR(36)     NOT NULL UNIQUE,
     aggregate_type VARCHAR(50)  NOT NULL,
     aggregate_id   VARCHAR(50)  NOT NULL,
     event_type     VARCHAR(100) NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE outbox (
 -- Consumer 멱등성 보장
 -- PK(event_id, consumer_group) 충돌 = 이미 처리된 이벤트 → 즉시 감지
 CREATE TABLE processed_events (
-    event_id       CHAR(36)     NOT NULL,
+    event_id       VARCHAR(36)     NOT NULL,
     consumer_group VARCHAR(100) NOT NULL,
     processed_at   DATETIME(6)  NOT NULL,
     PRIMARY KEY (event_id, consumer_group)
