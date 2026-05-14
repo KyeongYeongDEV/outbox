@@ -20,6 +20,7 @@ services:
       - --default-authentication-plugin=mysql_native_password
     volumes:
       - payment-mysql-data:/var/lib/mysql
+      - ./mysql-init/payment-init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
       interval: 5s
@@ -47,6 +48,7 @@ services:
       - --default-authentication-plugin=mysql_native_password
     volumes:
       - coupon-mysql-data:/var/lib/mysql
+      - ./mysql-init/coupon-init.sql:/docker-entrypoint-initdb.d/init.sql 
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
       interval: 5s
@@ -98,7 +100,7 @@ services:
 
       # ─── Kafka Connect (Debezium) ──────────────────
   kafka-connect:
-    image: debezium/connect:2.7
+    image: debezium/connect:2.6
     container_name: kafka-connect
     depends_on:
       kafka:

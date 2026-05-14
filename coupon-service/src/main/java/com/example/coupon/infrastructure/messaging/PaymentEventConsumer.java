@@ -1,14 +1,16 @@
 package com.example.coupon.infrastructure.messaging;
 
-import com.example.coupon.application.CouponService;
-import com.example.coupon.application.event.PaymentCompletedEvent;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
+
+import com.example.coupon.application.CouponService;
+import com.example.coupon.application.event.PaymentCompletedEvent;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -18,7 +20,7 @@ public class PaymentEventConsumer {
   private final CouponService couponService;
   private final ObjectMapper objectMapper;
 
-  @KafkaListener(topics = "payment.PaymentCompleted", groupId = "coupon-service")
+  @KafkaListener(topics = "outbox.event.Payment", groupId = "coupon-service")
   public void onPaymentCompleted(ConsumerRecord<String, String> record, Acknowledgment ack)
       throws Exception { // ← 추가: checked exception을 Spring Kafka로 위임
 
